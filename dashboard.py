@@ -440,7 +440,7 @@ st.markdown("""
 
 # Configuration - Dynamic API URL for deployment
 import os
-API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+API_BASE_URL = os.getenv("API_BASE_URL", "https://web-production-9e501.up.railway.app")
 
 # Initialize session state
 if 'documents' not in st.session_state:
