@@ -786,32 +786,53 @@ def render_query_section():
         delattr(st.session_state, 'example_question')
     
     # Submit query
-    if st.button("Ask Question", disabled=not question.strip()):
-        with st.spinner("Processing your question..."):
-            success, result = process_query(
-                question=question,
-                top_k=top_k,
-                similarity_threshold=similarity_threshold,
-                include_context=include_context,
-                include_citations=include_citations
-            )
+    if st.button("Ask Question", disabled=not question or not question.strip()):
+        if question and question.strip():
+            with st.spinner("Processing your question..."):
+                success, result = process_query(
+                    question=question.strip(),
+                    top_k=top_k,
+                    similarity_threshold=similarity_threshold,
+                    include_context=include_context,
+                    include_citations=include_citations
+                )
+        else:
+            st.error("Please enter a question before submitting.")
             
-            if success:
-                render_query_results(result)
-                
-                # Add to query history
-                st.session_state.query_history.append({
-                    "question": question,
-                    "answer": result["answer"],
-                    "timestamp": datetime.now(),
-                    "processing_time": result["processing_time"]
-                })
-            else:
-                st.markdown(f"""
-                <div class="error-message">
-                    ❌ Query failed: {result.get('detail', 'Unknown error')}
-                </div>
-                """, unsafe_allow_html=True)
+                if success:
+                    render_query_results(result)
+                    
+                    # Add to query history
+                    st.session_state.query_history.append({
+                        "question": question,
+                        "answer": result["answer"],
+                        "timestamp": datetime.now(),
+                        "processing_time": result["processing_time"]
+                    })
+                else:
+                    # Better error message handling
+                    error_detail = result.get('detail', 'Unknown error')
+                    if isinstance(error_detail, list):
+                        # Handle Pydantic validation errors
+                        error_messages = []
+                        for error in error_detail:
+                            if error.get('type') == 'string_too_short':
+                                error_messages.append("Question cannot be empty")
+                            else:
+                                error_messages.append(error.get('msg', 'Validation error'))
+                        error_detail = "; ".join(error_messages)
+                    
+                    st.markdown(f"""
+                    <div class="error-message">
+                        <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                            <span style="font-size: 1.5rem; margin-right: 0.5rem;">❌</span>
+                            <strong style="font-size: 1.1rem;">Query failed</strong>
+                        </div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">
+                            {error_detail}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
 def render_query_results(result):
     """Render query results with modern styling."""

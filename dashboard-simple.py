@@ -186,9 +186,13 @@ def main():
             height=100
         )
         
-        if st.button("Ask Question", disabled=not question.strip()):
-            with st.spinner("Processing your question..."):
-                success, result = process_query(question)
+        if st.button("Ask Question", disabled=not question or not question.strip()):
+            if question and question.strip():
+                with st.spinner("Processing your question..."):
+                    success, result = process_query(question.strip())
+            else:
+                st.error("Please enter a question before submitting.")
+                return
                 
                 if success:
                     st.markdown("### 🎯 Answer")
@@ -207,9 +211,21 @@ def main():
                     with col3:
                         st.metric("Model", result.get('model_used', 'Unknown'))
                 else:
+                    # Better error message handling
+                    error_detail = result.get('detail', 'Unknown error')
+                    if isinstance(error_detail, list):
+                        # Handle Pydantic validation errors
+                        error_messages = []
+                        for error in error_detail:
+                            if error.get('type') == 'string_too_short':
+                                error_messages.append("Question cannot be empty")
+                            else:
+                                error_messages.append(error.get('msg', 'Validation error'))
+                        error_detail = "; ".join(error_messages)
+                    
                     st.markdown(f"""
                     <div class="error-message">
-                        ❌ <strong>Query failed:</strong> {result.get('detail', 'Unknown error')}
+                        ❌ <strong>Query failed:</strong> {error_detail}
                     </div>
                     """, unsafe_allow_html=True)
 
