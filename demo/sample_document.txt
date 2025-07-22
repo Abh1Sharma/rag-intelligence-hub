@@ -1,0 +1,26 @@
+RAG Dashboard System - Sample Document
+
+Introduction
+This is a sample document for demonstrating the RAG Dashboard System capabilities. The system allows users to upload documents and ask questions about their content using advanced AI technology.
+
+Key Features
+- Document Upload: Support for PDF and TXT file formats
+- Intelligent Processing: Automatic text extraction and chunking
+- Vector Search: Advanced similarity search using embeddings
+- AI-Powered Answers: GPT-4 powered question answering
+- Modern Interface: Clean, professional dashboard design
+
+Technical Architecture
+The system is built using Python with FastAPI for the backend, Streamlit for the frontend, and OpenAI for AI capabilities. It uses Chroma as the vector database for storing and retrieving document embeddings.
+
+Benefits
+- Fast and accurate information retrieval
+- User-friendly interface suitable for demonstrations
+- Scalable architecture for production deployment
+- Comprehensive error handling and logging
+
+Demo Mode
+The system includes a special demo mode that automatically uploads this document and runs sample queries to showcase the system's capabilities in under 15 seconds.
+
+Conclusion
+This RAG Dashboard System represents a complete solution for document-based question answering, combining modern AI technology with an intuitive user interface.

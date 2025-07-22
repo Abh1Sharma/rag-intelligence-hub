@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  rag-dashboard:
+    build: .
+    ports:
+      - "8000:8000"  # FastAPI backend
+      - "8501:8501"  # Streamlit frontend
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-test_key_for_setup_validation}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-your_gemini_key_here}
+      - CHROMA_PERSIST_DIRECTORY=/app/chroma_db
+      - UPLOAD_DIRECTORY=/app/uploads
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./uploads:/app/uploads
+      - ./chroma_db:/app/chroma_db
+      - ./logs:/app/logs
+      - ./.env:/app/.env:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Separate services for development
+  api:
+    build: .
+    command: ["python", "main.py", "api"]
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-test_key_for_setup_validation}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-your_gemini_key_here}
+      - CHROMA_PERSIST_DIRECTORY=/app/chroma_db
+      - UPLOAD_DIRECTORY=/app/uploads
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./uploads:/app/uploads
+      - ./chroma_db:/app/chroma_db
+      - ./logs:/app/logs
+      - ./.env:/app/.env:ro
+    profiles:
+      - dev
+
+  frontend:
+    build: .
+    command: ["python", "main.py", "streamlit"]
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://api:8000
+    depends_on:
+      - api
+    profiles:
+      - dev
+
+volumes:
+  chroma_data:
+  uploads_data:
+  logs_data:
